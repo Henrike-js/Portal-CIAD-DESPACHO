@@ -1,21 +1,27 @@
 <?php
 include "conexao.php";
 
-$sql = "SELECT 
-            id,
-            matricula,
-            nome_teleatendente,
-            data_atendimento,
-            hora_atendimento,
-            municipio_chamada,
-            telefone_chamada,
-            nome_solicitante,
-            codigo_natureza
-        FROM registros_chamadas
-        ORDER BY data_atendimento DESC";
+$destino = filter_input(INPUT_GET, 'destino', FILTER_SANITIZE_SPECIAL_CHARS);
 
-$resultado = $conexao->query($sql);
+$sql = "SELECT * FROM registros_chamadas";
+$params = [];
+
+if (in_array($destino, ['190', '193', '197'])) {
+    $sql .= " WHERE destino_servico = ?";
+}
+
+$sql .= " ORDER BY data_atendimento DESC";
+
+$stmt = $conexao->prepare($sql);
+
+if (in_array($destino, ['190', '193', '197'])) {
+    $stmt->bind_param("s", $destino);
+}
+
+$stmt->execute();
+$resultado = $stmt->get_result();
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -49,7 +55,31 @@ $resultado = $conexao->query($sql);
     <h1>Atendimentos Registrados</h1>
     <p>Listagem completa de chamadas cadastradas no sistema</p>
 </div>
+<div class="filters-bar">
+    <div class="filters-pills">
 
+        <a href="relatorio.php"
+           class="pill <?= !$destino ? 'pill-active' : '' ?>">
+           Todos
+        </a>
+
+        <a href="relatorio.php?destino=190"
+           class="pill <?= $destino === '190' ? 'pill-active' : '' ?>">
+           190
+        </a>
+
+        <a href="relatorio.php?destino=193"
+           class="pill <?= $destino === '193' ? 'pill-active' : '' ?>">
+           193
+        </a>
+
+        <a href="relatorio.php?destino=197"
+           class="pill <?= $destino === '197' ? 'pill-active' : '' ?>">
+           197
+        </a>
+
+    </div>
+</div>
 <div class="cards-grid">
 
 <?php if ($resultado && $resultado->num_rows > 0): ?>
