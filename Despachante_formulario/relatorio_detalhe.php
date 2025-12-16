@@ -41,7 +41,7 @@ $d = $resultado->fetch_assoc();
     </div>
 </header>
 
-<main class="main">
+<main class="main relatorio-detalhe">
 <div class="main-inner">
 
 <div class="page-header">

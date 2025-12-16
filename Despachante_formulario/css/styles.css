@@ -249,3 +249,124 @@ body {
     text-overflow: ellipsis;
     word-break: break-word;
 }
+
+/* ===============================
+   RELATÓRIO – MODO IMPRESSÃO
+   =============================== */
+@media print {
+
+    /* Remove elementos visuais */
+    .topbar,
+    .footer,
+    .filters-bar {
+        display: none !important;
+    }
+
+    body {
+        background: #ffffff;
+        color: #000000;
+        font-size: 14pt;
+    }
+
+    .page,
+    .main,
+    .main-inner {
+        margin: 0;
+        padding: 0;
+        max-width: 100%;
+    }
+
+    /* Título principal */
+    .page-header h1 {
+        font-size: 22pt;
+        text-align: center;
+        margin-bottom: 6px;
+    }
+
+    .page-header p {
+        font-size: 14pt;
+        text-align: center;
+        margin-bottom: 18px;
+    }
+
+    /* Cards viram blocos de relatório */
+    .card {
+        box-shadow: none;
+        border: 1px solid #000;
+        border-radius: 0;
+        margin-bottom: 16px;
+        padding: 14px 18px;
+        page-break-inside: avoid;
+    }
+
+    /* Títulos das seções */
+    .card h3 {
+        font-size: 16pt;
+        border-bottom: 1px solid #000;
+        padding-bottom: 4px;
+        margin-bottom: 10px;
+    }
+
+    /* Texto */
+    .card p {
+        font-size: 14pt;
+        line-height: 1.5;
+        margin-bottom: 6px;
+    }
+
+    /* Destaque de labels */
+    .card p strong {
+        font-weight: bold;
+    }
+
+    /* Evita quebra ruim */
+    .card,
+    p {
+        page-break-inside: avoid;
+    }
+}
+
+/* ===============================
+   RELATÓRIO DETALHADO – VISUAL TELA
+   =============================== */
+
+.relatorio-detalhe .main-inner {
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+/* Cabeçalho */
+.relatorio-detalhe .page-header h1 {
+    font-size: 36px;
+    margin-bottom: 6px;
+}
+
+.relatorio-detalhe .page-header p {
+    font-size: 19px;
+    margin-bottom: 28px;
+}
+
+/* Cards viram blocos de relatório */
+.relatorio-detalhe .card {
+    padding: 30px 34px;
+    margin-bottom: 26px;
+}
+
+/* Títulos das seções */
+.relatorio-detalhe .card h3 {
+    font-size: 24px;
+    margin-bottom: 18px;
+    border-bottom: 2px solid var(--border-soft);
+    padding-bottom: 8px;
+}
+
+/* Texto */
+.relatorio-detalhe .card p {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+/* Destaque */
+.relatorio-detalhe .card p strong {
+    font-weight: 700;
+}
