@@ -91,7 +91,7 @@ $resultado = $stmt->get_result();
 
     <div class="card-body">
         <div class="card-header">
-            <h3><?= htmlspecialchars($linha['nome_solicitante']); ?></h3>
+            <h3><?= htmlspecialchars($linha['codigo_natureza']); ?></h3>
             <span class="card-ext">#<?= (int)$linha['id']; ?></span>
         </div>
 
@@ -113,9 +113,11 @@ $resultado = $stmt->get_result();
 
         <p>
             <strong>Natureza:</strong>
-            <?= htmlspecialchars($linha['codigo_natureza']); ?>
+            <?= htmlspecialchars($linha['nome_solicitante']); ?>
         </p>
     </div>
+
+    '
 
 </a>
 
@@ -126,6 +128,14 @@ $resultado = $stmt->get_result();
 
 </div>
 </div>
+
+<div style="margin-top:30px; display:flex; justify-content:flex-end;">
+    <a href="../Despachador_formulario/Despachador.php" class="btn-despachar">
+        <span class="material-icons-outlined">local_police</span>
+        Despachar
+    </a>
+</div>
+
 </main>
 
 <footer class="footer">
