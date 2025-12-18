@@ -112,7 +112,7 @@ $resultado = $stmt->get_result();
         </p>
 
         <p>
-            <strong>Natureza:</strong>
+            <strong>Solicitante:</strong>
             <?= htmlspecialchars($linha['nome_solicitante']); ?>
         </p>
     </div>
@@ -129,12 +129,7 @@ $resultado = $stmt->get_result();
 </div>
 </div>
 
-<div style="margin-top:30px; display:flex; justify-content:flex-end;">
-    <a href="../Despachador_formulario/Despachador.php" class="btn-despachar">
-        <span class="material-icons-outlined">local_police</span>
-        Despachar
-    </a>
-</div>
+
 
 </main>
 

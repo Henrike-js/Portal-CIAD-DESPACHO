@@ -119,8 +119,16 @@ Nº <?= htmlspecialchars($d['numero_solicitante']); ?>
 </p>
 </div>
 </div>
+<div style="margin-top:30px; display:flex; justify-content:flex-start; align-items:center;">
+    <a href="../Despachador_formulario/Despachador.php" class="btn-despachar">
+        Despachar
+    </a>
+</div>
 
 </div>
+</div>
+
+
 </main>
 
 <footer class="footer">

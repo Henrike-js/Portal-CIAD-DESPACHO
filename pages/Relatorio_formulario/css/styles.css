@@ -370,21 +370,28 @@ body {
 .relatorio-detalhe .card p strong {
     font-weight: 700;
 }
-
+/* botão despachar*/
 .btn-despachar{
-    background:#C63232;
-    color:#fff;
-    padding:16px 40px;
-    border:0;
-    border-radius:8px;
-    font-size:18px;
-    font-weight:700;
-    cursor:pointer;
-    display:flex;
+    background:#13294B;          /* azul escuro GOV */
+    color:#FFFFFF;
+
+    padding:12px 28px;
+    min-height:44px;
+
+    border-radius:10px;          /* bem arredondado */
+    font-size:15px;
+    font-weight:600;
+
+    display:inline-flex;
     align-items:center;
-    gap:10px;
+    justify-content:center;
+
+    text-decoration:none;
+    border:none;
+    cursor:pointer;
 }
 
 .btn-despachar:hover{
-    background:#9E2424;
+    background:#0F1F3A;
 }
+
