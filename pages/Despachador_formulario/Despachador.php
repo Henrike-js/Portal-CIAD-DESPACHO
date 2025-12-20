@@ -1,71 +1,72 @@
+<?php
+include "../conexao.php";
+
+if (!isset($conexao)) {
+    die("Erro ao carregar conexão com o banco.");
+}
+
+$chamada_id = filter_input(INPUT_GET, 'chamada', FILTER_VALIDATE_INT);
+if (!$chamada_id) {
+    die("Chamada inválida.");
+}
+
+$sql = "SELECT * FROM registros_chamadas WHERE id = ?";
+$stmt = $conexao->prepare($sql);
+$stmt->bind_param("i", $chamada_id);
+$stmt->execute();
+$resultado = $stmt->get_result();
+
+if ($resultado->num_rows === 0) {
+    die("Registro não encontrado.");
+}
+
+$dados_chamada = $resultado->fetch_assoc();
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Registro do Despachador</title>
+<title>Despacho da Chamada Nº <?= (int)$dados_chamada['id']; ?></title>
 
 <link href="https://fonts.cdnfonts.com/css/rawline" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Rawline',sans-serif}
 body{background:#F4F5F8;color:#16325C}
-
-.gov-header{
-    background:white;
-    border-bottom:6px solid #C63232;
-    padding:20px 0;
-}
-.gov-header img{height:90px}
-
 .page{max-width:1100px;margin:40px auto;padding:0 40px}
 
-h1{font-size:32px;display:flex;gap:10px;align-items:center}
-.sub{margin:10px 0 30px;color:#555}
+h1{font-size:28px}
+.sub{margin:10px 0 25px;color:#555}
 
 .card{
-    background:white;
-    padding:30px;
+    background:#fff;
+    padding:25px;
     border-radius:10px;
     margin-bottom:25px;
     box-shadow:0 2px 10px rgba(0,0,0,.06);
 }
 
-fieldset{border:none}
-legend{
-    font-size:20px;
-    font-weight:700;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-bottom:20px;
-}
-
 label{font-weight:600;margin-bottom:5px;display:block}
 input,select,textarea{
     width:100%;
-    padding:11px;
+    padding:10px;
     border:1px solid #D0D2D6;
-    border-radius:8px;
-    font-size:15px;
+    border-radius:6px;
 }
 textarea{resize:vertical}
+input[readonly],textarea[readonly]{background:#F4F5F8}
 
-/* Correção radio */
-input[type="radio"]{width:auto}
-
-/* Layout */
-.row{display:flex;gap:18px;margin-bottom:18px}
-.w-100{flex:100%}
-.w-50{flex:50%}
-.w-33{flex:33%}
+.row{display:flex;gap:16px;margin-bottom:16px}
 .w-25{flex:25%}
+.w-33{flex:33%}
+.w-50{flex:50%}
+.w-100{flex:100%}
 
 /* Classificação em 3 colunas */
 .classificacao-grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:12px 20px;
+    gap:10px 20px;
 }
 .classificacao-grid label{
     display:flex;
@@ -74,68 +75,97 @@ input[type="radio"]{width:auto}
     font-weight:400;
 }
 
+input[type="radio"]{width:auto}
+
 button{
-    background:#16325C;
-    color:white;
-    padding:14px 30px;
+    background:#13294B;
+    color:#fff;
+    padding:14px 32px;
     border:0;
     border-radius:8px;
     font-size:16px;
     cursor:pointer;
 }
-button:hover{background:#0D2345}
+button:hover{background:#0F1F3A}
 </style>
 </head>
 
 <body>
 
-<header class="gov-header">
-    <div class="page">
-        <img src="sisp-logo.png" alt="SISP">
-    </div>
-</header>
-
 <div class="page">
 
-<h1><span class="material-icons-outlined">badge</span> Registro do Despachador</h1>
-<p class="sub">Controle operacional do despachador e encerramento da chamada</p>
+<h1>Despacho da Chamada</h1>
+<p class="sub">
+Chamada Nº <?= (int)$dados_chamada['id']; ?> •
+<?= date('d/m/Y', strtotime($dados_chamada['data_atendimento'])); ?>
+</p>
 
+<!-- ================= RESUMO DA CHAMADA ================= -->
+<div class="card">
+<h3>Resumo da Chamada</h3>
+
+<div class="row">
+    <div class="w-50">
+        <label>Solicitante</label>
+        <input value="<?= htmlspecialchars($dados_chamada['nome_solicitante']); ?>" readonly>
+    </div>
+    <div class="w-50">
+        <label>Telefone</label>
+        <input value="<?= htmlspecialchars($dados_chamada['telefone_chamada']); ?>" readonly>
+    </div>
+</div>
+
+<div class="row">
+    <div class="w-100">
+        <label>Endereço</label>
+        <input value="<?= htmlspecialchars($dados_chamada['logradouro_chamada']); ?>, Nº <?= htmlspecialchars($dados_chamada['numero_chamada']); ?> - <?= htmlspecialchars($dados_chamada['bairro_chamada']); ?>" readonly>
+    </div>
+</div>
+
+<div class="row">
+    <div class="w-100">
+        <label>Natureza Inicial</label>
+        <textarea rows="3" readonly><?= htmlspecialchars($dados_chamada['descricao_natureza']); ?></textarea>
+    </div>
+</div>
+</div>
+
+<!-- ================= FORMULÁRIO DO DESPACHADOR ================= -->
 <form action="salvar_despachador.php" method="post">
+
+<input type="hidden" name="chamada_id" value="<?= (int)$dados_chamada['id']; ?>">
 
 <!-- ================= DADOS DO DESPACHADOR ================= -->
 <div class="card">
-<fieldset>
-<legend><span class="material-icons-outlined">support_agent</span> Dados do Despachador</legend>
+<h3>Dados do Despachador</h3>
 
 <div class="row">
-    <div class="w-25"><label>Matrícula</label><input name="matricula" required></div>
+    <div class="w-33"><label>Matrícula</label><input name="matricula" required></div>
     <div class="w-50"><label>Nome</label><input name="nome" required></div>
-    <div class="w-25"><label>Revezador</label><input name="revezador"></div>
 </div>
 
 <div class="row">
-    <div class="w-25"><label>Data</label><input type="date" name="data" id="data" required></div>
-    <div class="w-25"><label>Hora do Despacho</label><input type="time" name="hora" id="hora" required></div>
+    <div class="w-25"><label>Data</label><input type="date" name="data" required></div>
+    <div class="w-25"><label>Hora</label><input type="time" name="hora" required></div>
 </div>
-</fieldset>
 </div>
 
 <!-- ================= STATUS DO RECURSO ================= -->
 <div class="card">
-<fieldset>
-<legend><span class="material-icons-outlined">schedule</span> Status do Recurso</legend>
+<h3>Status do Recurso</h3>
 
 <div class="row">
     <div class="w-33"><label>Recurso</label><input name="recurso"></div>
     <div class="w-33"><label>Unidade</label><input name="unidade"></div>
-    <div class="w-25"><label>Despachada</label><input type="time" name="hora_despachada"></div>
-    
 </div>
 
 <div class="row">
-    
+    <div class="w-25"><label>Despachada</label><input type="time" name="hora_despachada"></div>
     <div class="w-25"><label>A caminho</label><input type="time" name="hora_a_caminho"></div>
     <div class="w-25"><label>No local</label><input type="time" name="hora_no_local"></div>
+</div>
+
+<div class="row">
     <div class="w-33">
         <label>Encerramento</label>
         <select name="encerramento">
@@ -147,15 +177,11 @@ button:hover{background:#0D2345}
         </select>
     </div>
 </div>
-
-
-</fieldset>
 </div>
 
-<!-- ================= CLASSIFICAÇÃO ================= -->
+<!-- ================= CLASSIFICAÇÃO DA CHAMADA ================= -->
 <div class="card">
-<fieldset>
-<legend><span class="material-icons-outlined">assignment_turned_in</span> Classificação da Chamada</legend>
+<h3>Classificação da Chamada</h3>
 
 <div class="classificacao-grid">
 <label><input type="radio" name="classificacao" value="Transmitido a rede">Transmitido à rede</label>
@@ -174,52 +200,55 @@ button:hover{background:#0D2345}
 <label><input type="radio" name="classificacao" value="Outros">Outros</label>
 </div>
 
-<div class="row" style="margin-top:18px">
+<div class="row" style="margin-top:15px">
     <div class="w-50">
         <label>Observação / Nº da chamada</label>
         <input name="observacao_classificacao">
     </div>
 </div>
-</fieldset>
 </div>
 
 <!-- ================= NATUREZA FINAL ================= -->
 <div class="card">
-<fieldset>
-<legend><span class="material-icons-outlined">fact_check</span> Natureza Final</legend>
+<h3>Natureza Final</h3>
 
-<div class="w-100">
-    <label>Descrição da Natureza Final</label>
-    <textarea name="descricao_natureza_final" rows="4"></textarea>
+<div class="row">
+    <div class="w-100">
+        <label>Descrição da Natureza Final</label>
+        <textarea name="descricao_natureza_final" rows="4"></textarea>
+    </div>
 </div>
 
 <div class="row">
     <div class="w-33"><label>Código Natureza Final</label><input name="codigo_natureza_final"></div>
-    <div class="w-33"><label>Número da Chamada</label><input name="numero_chamada"></div>
+    <div class="w-33"><label>Número da Chamada</label><input name="numero_chamada" value="<?= (int)$dados_chamada['id']; ?>" readonly></div>
     <div class="w-33"><label>NR PM</label><input name="nr_pm"></div>
 </div>
 
-<div class="w-100">
-    <label>Comentários</label>
-    <textarea name="comentarios" rows="3"></textarea>
+<div class="row">
+    <div class="w-100">
+        <label>Comentários</label>
+        <textarea name="comentarios" rows="3"></textarea>
+    </div>
 </div>
-
-</fieldset>
 </div>
+<div style="display:flex; gap:15px; margin-top:30px;">
 
-<button type="submit">Salvar Registro</button>
+    <!-- BOTÃO SALVAR DESPACHO -->
+<button type="submit">Salvar Despacho</button>
 
 </form>
+
 </div>
 
 <script>
-const d=document.getElementById('data');
-const h=document.getElementById('hora');
-const now=new Date();
-d.value=now.toISOString().substring(0,10);
-h.value=now.toTimeString().substring(0,5);
+const now = new Date();
+document.querySelector('input[name="data"]').value = now.toISOString().substring(0,10);
+document.querySelector('input[name="hora"]').value = now.toTimeString().substring(0,5);
 </script>
 
 </body>
 </html>
+
+
 

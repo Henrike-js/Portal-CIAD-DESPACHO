@@ -1,5 +1,6 @@
+
 <?php
-include "conexao.php";
+include "../conexao.php";
 
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if (!$id) {
@@ -19,34 +20,102 @@ if ($resultado->num_rows === 0) {
 $d = $resultado->fetch_assoc();
 ?>
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Relatório da Chamada Nº <?= (int)$d['id']; ?></title>
 
-<link rel="stylesheet" href="css/styles.css">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    font-family:'Source Sans Pro',sans-serif;
+    background:#F4F5F8;
+    color:#16325C;
+}
+
+.page{max-width:1100px;margin:0 auto}
+
+.topbar{
+    background:#fff;
+    border-bottom:6px solid #C63232;
+}
+.topbar-inner{
+    max-width:1100px;
+    margin:0 auto;
+    padding:20px;
+}
+.logo-sisp-img{height:80px}
+
+.page-header{
+    margin:30px 0;
+}
+.page-header h1{
+    font-family:'Montserrat',sans-serif;
+    font-size:28px;
+}
+.page-header p{color:#555}
+
+.card{
+    background:#fff;
+    border-radius:10px;
+    margin-bottom:25px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+.card-body{
+    padding:25px;
+}
+.card h3{
+    font-family:'Montserrat',sans-serif;
+    font-size:18px;
+    margin-bottom:15px;
+}
+
+.card p{margin-bottom:8px}
+
+.btn-despachar{
+    background:#13294B;
+    color:#fff;
+    padding:12px 36px;
+    border-radius:10px;
+    font-size:15px;
+    font-weight:600;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.btn-despachar:hover{background:#0F1F3A}
+
+.footer{
+    margin:40px 0;
+    font-size:13px;
+    color:#666;
+    text-align:center;
+}
+</style>
 </head>
 
 <body>
+
 <div class="page">
 
 <header class="topbar">
     <div class="topbar-inner">
-        <div class="logo-wrapper">
-            <a href="relatorio.php" class="logo-link">
-                <img src="img/sisp-logo.png" class="logo-sisp-img" alt="Logo">
-            </a>
-        </div>
+        <img src="img/sisp-logo.png" class="logo-sisp-img" alt="SISP">
     </div>
 </header>
 
-<main class="main relatorio-detalhe">
-<div class="main-inner">
+<main>
 
 <div class="page-header">
     <h1>RELATÓRIO DE CHAMADA</h1>
-    <p>Nº <?= (int)$d['id']; ?> • <?= date('d/m/Y', strtotime($d['data_atendimento'])); ?></p>
+    <p>
+        Nº <?= (int)$d['id']; ?> •
+        <?= date('d/m/Y', strtotime($d['data_atendimento'])); ?>
+    </p>
 </div>
 
 <!-- ================= TELEATENDENTE ================= -->
@@ -67,7 +136,7 @@ $d = $resultado->fetch_assoc();
 </div>
 </div>
 
-<!-- ================= LOCAL DA CHAMADA ================= -->
+<!-- ================= LOCAL ================= -->
 <div class="card">
 <div class="card-body">
 <h3>2. Local da Chamada</h3>
@@ -119,22 +188,24 @@ Nº <?= htmlspecialchars($d['numero_solicitante']); ?>
 </p>
 </div>
 </div>
-<div style="margin-top:30px; display:flex; justify-content:flex-start; align-items:center;">
-    <a href="../Despachador_formulario/Despachador.php" class="btn-despachar">
+
+<!-- ================= BOTÃO DESPACHAR ================= -->
+<div style="margin-top:30px; display:flex; justify-content:flex-start;">
+    <a href="../Despachador_formulario/Despachador.php?chamada=<?= (int)$d['id']; ?>"
+       class="btn-despachar">
         Despachar
     </a>
 </div>
 
-</div>
-</div>
-
-
 </main>
 
 <footer class="footer">
-Relatório da Chamada Nº <?= (int)$d['id']; ?> • Gerado em <?= date('d/m/Y H:i'); ?>
+Relatório da Chamada Nº <?= (int)$d['id']; ?> •
+Gerado em <?= date('d/m/Y H:i'); ?>
 </footer>
 
 </div>
+
 </body>
 </html>
+

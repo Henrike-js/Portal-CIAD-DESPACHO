@@ -1,78 +1,116 @@
 <?php
-// ================= CONFIGURAÇÃO DO BANCO =================
-$host = "localhost";
-$db   = "sisp";          // nome do banco
-$user = "root";          // usuário
-$pass = "";              // senha
-$charset = "utf8mb4";
+include "../conexao.php";
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES   => false,
-];
-
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (Exception $e) {
-    die("Erro na conexão com o banco.");
+if (!isset($conexao)) {
+    die("Erro de conexão.");
 }
 
-// ================= RECEBENDO OS DADOS =================
-$data = [
-    'matricula' => $_POST['matricula'] ?? null,
-    'nome' => $_POST['nome'] ?? null,
-    'revezador' => $_POST['revezador'] ?? null,
-    'data_registro' => $_POST['data'] ?? null,
-    'hora_registro' => $_POST['hora'] ?? null,
+$conexao->begin_transaction();
 
-    'recurso' => $_POST['recurso'] ?? null,
-    'unidade' => $_POST['unidade'] ?? null,
-    'encerramento' => $_POST['encerramento'] ?? null,
+try {
 
-    'hora_despachada' => $_POST['hora_despachada'] ?? null,
-    'hora_a_caminho' => $_POST['hora_a_caminho'] ?? null,
-    'hora_no_local' => $_POST['hora_no_local'] ?? null,
-    'hora_encerramento' => $_POST['hora_encerramento'] ?? null,
-    'hora_disponivel' => $_POST['hora_disponivel'] ?? null,
-    'hora_indisponivel' => $_POST['hora_indisponivel'] ?? null,
-    'hora_suspenso' => $_POST['hora_suspenso'] ?? null,
-    'hora_terminado' => $_POST['hora_terminado'] ?? null,
+    $chamada_id = (int) $_POST['chamada_id'];
 
-    'classificacao' => $_POST['classificacao'] ?? null,
-    'observacao_classificacao' => $_POST['observacao_classificacao'] ?? null,
+    // ===== BUSCA CHAMADA ORIGINAL =====
+    $sql = "SELECT * FROM registros_chamadas WHERE id = ?";
+    $stmt = $conexao->prepare($sql);
+    $stmt->bind_param("i", $chamada_id);
+    $stmt->execute();
+    $chamada = $stmt->get_result()->fetch_assoc();
 
-    'descricao_natureza_final' => $_POST['descricao_natureza_final'] ?? null,
-    'codigo_natureza_final' => $_POST['codigo_natureza_final'] ?? null,
-    'numero_chamada' => $_POST['numero_chamada'] ?? null,
-    'nr_pm' => $_POST['nr_pm'] ?? null,
-    'comentarios' => $_POST['comentarios'] ?? null,
-];
+    if (!$chamada) {
+        throw new Exception("Chamada não encontrada.");
+    }
 
-// ================= INSERT =================
-$sql = "
-INSERT INTO despachador_registro (
-    matricula, nome, revezador, data_registro, hora_registro,
-    recurso, unidade, encerramento,
-    hora_despachada, hora_a_caminho, hora_no_local, hora_encerramento,
-    hora_disponivel, hora_indisponivel, hora_suspenso, hora_terminado,
-    classificacao, observacao_classificacao,
-    descricao_natureza_final, codigo_natureza_final,
-    numero_chamada, nr_pm, comentarios
-) VALUES (
-    :matricula, :nome, :revezador, :data_registro, :hora_registro,
-    :recurso, :unidade, :encerramento,
-    :hora_despachada, :hora_a_caminho, :hora_no_local, :hora_encerramento,
-    :hora_disponivel, :hora_indisponivel, :hora_suspenso, :hora_terminado,
-    :classificacao, :observacao_classificacao,
-    :descricao_natureza_final, :codigo_natureza_final,
-    :numero_chamada, :nr_pm, :comentarios
-)";
+    // ===== DADOS PARA INSERT (ARRAY ÚNICO) =====
+    $dados = [
+        $chamada_id,
+        $chamada['data_atendimento'],
+        $chamada['hora_atendimento'],
+        $chamada['matricula'],
+        $chamada['nome_teleatendente'],
+        $chamada['nome_solicitante'],
+        $chamada['telefone_chamada'],
+        $chamada['logradouro_chamada'],
+        $chamada['numero_chamada'],
+        $chamada['bairro_chamada'],
+        $chamada['municipio_chamada'],
+        $chamada['codigo_natureza'],
+        $chamada['descricao_natureza'],
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute($data);
+        $_POST['matricula'],
+        $_POST['nome'],
+        $_POST['data'],
+        $_POST['hora'],
 
-// ================= REDIRECIONAMENTO =================
-header("Location: despachador.php?sucesso=1");
+        $_POST['recurso'],
+        $_POST['unidade'],
+        $_POST['hora_despachada'],
+        $_POST['hora_a_caminho'],
+        $_POST['hora_no_local'],
+
+        $_POST['encerramento'],
+        $_POST['classificacao'],
+        $_POST['observacao_classificacao'],
+        $_POST['codigo_natureza_final'],
+        $_POST['descricao_natureza_final'],
+        $_POST['nr_pm'],
+        $_POST['comentarios']
+    ];
+
+    // ===== SQL FINAL =====
+    $sql = "INSERT INTO chamadas_finalizadas (
+        chamada_id,
+        data_atendimento,
+        hora_atendimento,
+        matricula_atendente,
+        nome_teleatendente,
+        solicitante,
+        telefone,
+        logradouro,
+        numero,
+        bairro,
+        municipio,
+        codigo_natureza_inicial,
+        descricao_natureza_inicial,
+        matricula_despachador,
+        nome_despachador,
+        data_despacho,
+        hora_despacho,
+        recurso,
+        unidade,
+        hora_despachada,
+        hora_a_caminho,
+        hora_no_local,
+        encerramento,
+        classificacao,
+        observacao_classificacao,
+        codigo_natureza_final,
+        descricao_natureza_final,
+        nr_pm,
+        comentarios
+    ) VALUES (" . implode(',', array_fill(0, count($dados), '?')) . ")";
+
+    $stmt = $conexao->prepare($sql);
+
+    // ===== TYPES DINÂMICOS =====
+    $types = str_repeat('s', count($dados));
+    $types[0] = 'i'; // chamada_id é inteiro
+
+    $stmt->bind_param($types, ...$dados);
+    $stmt->execute();
+
+    // ===== DELETE DA CHAMADA ABERTA =====
+    $stmt = $conexao->prepare("DELETE FROM registros_chamadas WHERE id = ?");
+    $stmt->bind_param("i", $chamada_id);
+    $stmt->execute();
+
+    $conexao->commit();
+
+    header("Location: mensagem_finalizacao.php");
 exit;
+
+} catch (Exception $e) {
+    $conexao->rollback();
+    die("Erro ao finalizar chamada: " . $e->getMessage());
+}
