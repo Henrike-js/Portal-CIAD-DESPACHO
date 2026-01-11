@@ -34,6 +34,28 @@ $c = $result->fetch_assoc();
 .item{background:#fff;border:1px solid var(--border-soft);border-radius:12px;padding:10px 14px}
 .label{font-size:12px;color:var(--text-muted)}
 .value{font-weight:700}
+
+/* BOTÃO COPIAR */
+.copy-box{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.copy-btn{
+  background:#eaeaea;
+  border:none;
+  border-radius:8px;
+  padding:6px 10px;
+  cursor:pointer;
+  font-size:14px;
+  transition:.2s;
+}
+.copy-btn:hover{background:#d0d0d0;}
+.copy-btn.copied{
+  background:#4CAF50;
+  color:#fff;
+}
 </style>
 </head>
 
@@ -61,53 +83,71 @@ $c = $result->fetch_assoc();
 
 <div class="report-container">
 
+<!-- ================= DADOS DO ATENDIMENTO ================= -->
 <div class="section">
 <h2>Dados do Atendimento</h2>
 <div class="grid">
-<div class="item"><div class="label">Data</div><div class="value"><?= $c['data_atendimento'] ?></div></div>
-<div class="item"><div class="label">Hora</div><div class="value"><?= $c['hora_atendimento'] ?></div></div>
-<div class="item"><div class="label">Matrícula</div><div class="value"><?= $c['matricula'] ?></div></div>
-<div class="item"><div class="label">Teleatendente</div><div class="value"><?= $c['nome_teleatendente'] ?></div></div>
+
+<?php
+function campo($valor){
+    return '<div class="value copy-box"><span class="copy-text">'.$valor.'</span><button class="copy-btn" onclick="copiarTexto(this)">📋</button></div>';
+}
+?>
+
+<div class="item"><div class="label">Data</div><?= campo($c['data_atendimento']) ?></div>
+<div class="item"><div class="label">Hora</div><?= campo($c['hora_atendimento']) ?></div>
+<div class="item"><div class="label">Matrícula</div><?= campo($c['matricula']) ?></div>
+<div class="item"><div class="label">Teleatendente</div><?= campo($c['nome_teleatendente']) ?></div>
+
 </div>
 </div>
 
+<!-- ================= SOLICITANTE ================= -->
 <div class="section">
 <h2>Solicitante</h2>
 <div class="grid">
-<div class="item"><div class="label">Nome</div><div class="value"><?= $c['nome_solicitante'] ?></div></div>
-<div class="item"><div class="label">Telefone</div><div class="value"><?= $c['telefone_chamada'] ?></div></div>
-<div class="item"><div class="label">Endereço</div><div class="value"><?= $c['logradouro_chamada'] ?>, <?= $c['numero_chamada'] ?></div></div>
-<div class="item"><div class="label">Bairro</div><div class="value"><?= $c['bairro_chamada'] ?></div></div>
-<div class="item"><div class="label">Município</div><div class="value"><?= $c['municipio_chamada'] ?></div></div>
+
+<div class="item"><div class="label">Nome</div><?= campo($c['nome_solicitante']) ?></div>
+<div class="item"><div class="label">Telefone</div><?= campo($c['telefone_chamada']) ?></div>
+<div class="item"><div class="label">Endereço</div><?= campo($c['logradouro_chamada']." , ".$c['numero_chamada']) ?></div>
+<div class="item"><div class="label">Bairro</div><?= campo($c['bairro_chamada']) ?></div>
+<div class="item"><div class="label">Município</div><?= campo($c['municipio_chamada']) ?></div>
+
 </div>
 </div>
 
+<!-- ================= NATUREZA ================= -->
 <div class="section">
 <h2>Natureza</h2>
 <div class="grid">
-<div class="item"><div class="label">Código</div><div class="value"><?= $c['codigo_natureza'] ?></div></div>
-<div class="item"><div class="label">Descrição</div><div class="value"><?= nl2br(htmlspecialchars($c['descricao_natureza'])) ?></div></div>
+
+<div class="item"><div class="label">Código</div><?= campo($c['codigo_natureza']) ?></div>
+<div class="item"><div class="label">Historico</div><?= campo(nl2br(htmlspecialchars($c['descricao_natureza']))) ?></div>
+
 </div>
 </div>
 
+<!-- ================= DESPACHO ================= -->
 <div class="section">
 <h2>Despacho</h2>
 <div class="grid">
-<div class="item"><div class="label">Despachador</div><div class="value"><?= $c['despachador_nome'] ?></div></div>
-<div class="item"><div class="label">Matrícula</div><div class="value"><?= $c['despachador_matricula'] ?></div></div>
-<div class="item"><div class="label">Data</div><div class="value"><?= $c['data_despacho'] ?></div></div>
-<div class="item"><div class="label">Hora</div><div class="value"><?= $c['hora_despacho'] ?></div></div>
-<div class="item"><div class="label">Recurso</div><div class="value"><?= $c['recurso'] ?></div></div>
-<div class="item"><div class="label">Unidade</div><div class="value"><?= $c['unidade'] ?></div></div>
-<div class="item"><div class="label">Despachada</div><div class="value"><?= $c['hora_despachada'] ?></div></div>
-<div class="item"><div class="label">A caminho</div><div class="value"><?= $c['hora_a_caminho'] ?></div></div>
-<div class="item"><div class="label">No local</div><div class="value"><?= $c['hora_no_local'] ?></div></div>
-<div class="item"><div class="label">Encerramento</div><div class="value"><?= $c['encerramento'] ?></div></div>
-<div class="item"><div class="label">Classificação</div><div class="value"><?= $c['classificacao'] ?></div></div>
-<div class="item"><div class="label">Natureza Final</div><div class="value"><?= $c['codigo_natureza_final'] ?></div></div>
-<div class="item"><div class="label">Descrição Final</div><div class="value"><?= nl2br(htmlspecialchars($c['descricao_natureza_final'])) ?></div></div>
-<div class="item"><div class="label">NR PM</div><div class="value"><?= $c['nr_pm'] ?></div></div>
-<div class="item"><div class="label">Comentários</div><div class="value"><?= nl2br(htmlspecialchars($c['comentarios'])) ?></div></div>
+
+<div class="item"><div class="label">Despachador</div><?= campo($c['despachador_nome']) ?></div>
+<div class="item"><div class="label">Matrícula</div><?= campo($c['despachador_matricula']) ?></div>
+<div class="item"><div class="label">Data</div><?= campo($c['data_despacho']) ?></div>
+<div class="item"><div class="label">Hora</div><?= campo($c['hora_despacho']) ?></div>
+<div class="item"><div class="label">Recurso</div><?= campo($c['recurso']) ?></div>
+<div class="item"><div class="label">Unidade</div><?= campo($c['unidade']) ?></div>
+<div class="item"><div class="label">Despachada</div><?= campo($c['hora_despachada']) ?></div>
+<div class="item"><div class="label">A caminho</div><?= campo($c['hora_a_caminho']) ?></div>
+<div class="item"><div class="label">No local</div><?= campo($c['hora_no_local']) ?></div>
+<div class="item"><div class="label">Encerramento</div><?= campo($c['encerramento']) ?></div>
+<div class="item"><div class="label">Classificação</div><?= campo($c['classificacao']) ?></div>
+<div class="item"><div class="label">Natureza Final</div><?= campo($c['codigo_natureza_final']) ?></div>
+<div class="item"><div class="label">Descrição Final</div><?= campo(nl2br(htmlspecialchars($c['descricao_natureza_final']))) ?></div>
+<div class="item"><div class="label">NR PM</div><?= campo($c['nr_pm']) ?></div>
+<div class="item"><div class="label">Comentários</div><?= campo(nl2br(htmlspecialchars($c['comentarios']))) ?></div>
+
 </div>
 </div>
 
@@ -117,7 +157,23 @@ $c = $result->fetch_assoc();
 </div>
 </main>
 </div>
+
+<script>
+function copiarTexto(btn){
+    const text = btn.closest('.copy-box').querySelector('.copy-text').innerText;
+    navigator.clipboard.writeText(text).then(()=>{
+        btn.classList.add('copied');
+        btn.innerText = "✔";
+        setTimeout(()=>{
+            btn.classList.remove('copied');
+            btn.innerText = "📋";
+        },1500);
+    });
+}
+</script>
+
 </body>
 </html>
+
 
 

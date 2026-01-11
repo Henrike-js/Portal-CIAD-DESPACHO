@@ -128,11 +128,6 @@ body{
 <p><strong>Data:</strong> <?= date('d/m/Y', strtotime($d['data_atendimento'])); ?></p>
 <p><strong>Hora:</strong> <?= htmlspecialchars($d['hora_atendimento']); ?></p>
 
-<p>
-<strong>Iniciativa:</strong> <?= htmlspecialchars($d['iniciativa']); ?><br>
-<strong>Viatura:</strong> <?= htmlspecialchars($d['iniciativa_viatura']); ?><br>
-<strong>Servidor:</strong> <?= htmlspecialchars($d['iniciativa_servidor']); ?>
-</p>
 </div>
 </div>
 

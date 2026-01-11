@@ -123,7 +123,7 @@ Chamada Nº <?= (int)$dados_chamada['id']; ?> •
 
 <div class="row">
     <div class="w-100">
-        <label>Natureza Inicial</label>
+        <label>Historico</label>
         <textarea rows="3" readonly><?= htmlspecialchars($dados_chamada['descricao_natureza']); ?></textarea>
     </div>
 </div>
@@ -132,6 +132,17 @@ Chamada Nº <?= (int)$dados_chamada['id']; ?> •
 <form action="salvar_despachador.php" method="post">
 
 <input type="hidden" name="chamada_id" value="<?= (int)$dados_chamada['id']; ?>">
+
+<div class="row">
+    <div class="w-100">
+        <label for="status">Status da Chamada</label>
+        <select name="status" id="status" class="form-control">
+            <option value="aberto" <?= ($dados_chamada['status'] == 'aberto') ? 'selected' : '' ?>>Aberto</option>
+            <option value="encaminhada" <?= ($dados_chamada['status'] == 'encaminhada') ? 'selected' : '' ?>>Encaminhada</option>
+            <option value="fechada" <?= ($dados_chamada['status'] == 'fechada') ? 'selected' : '' ?>>Fechada</option>
+        </select>
+    </div>
+</div>
 
 <!-- ================= DADOS DO DESPACHADOR ================= -->
 <div class="card">
@@ -232,8 +243,9 @@ foreach($opcoes as $op){
 
 <div class="row">
     <div class="w-100">
-        <label>Descrição da Natureza Final</label>
-        <textarea name="descricao_natureza_final"><?= htmlspecialchars($dados_chamada['descricao_natureza_final']) ?></textarea>
+        <label class="form-control">
+            <?= nl2br(htmlspecialchars($dados_chamada['descricao_natureza_final'])) ?>
+        </label>
     </div>
 </div>
 
