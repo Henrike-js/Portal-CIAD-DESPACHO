@@ -1,3 +1,6 @@
+<?php
+$chamada = filter_input(INPUT_GET,'chamada',FILTER_VALIDATE_INT);
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -46,7 +49,8 @@ body{
 
 <div class="box">
     <h1>✅ Chamada salva com sucesso</h1>
-    <p>Você será redirecionado automaticamente.</p>
+   <p>Chamada nº <strong><?= $chamada ?></strong> salva com sucesso.</p>
+<p>Você será redirecionado automaticamente.</p>
     <div class="countdown">
         Retornando em <span id="segundos">3</span> segundos...
     </div>
@@ -62,7 +66,7 @@ const timer = setInterval(() => {
 
     if (segundos <= 0) {
         clearInterval(timer);
-        window.location.href = "../../ index.html";
+        window.location.href = "relatorio.php";
     }
 }, 1000);
 </script>

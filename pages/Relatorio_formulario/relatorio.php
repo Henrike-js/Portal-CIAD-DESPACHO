@@ -1,142 +1,179 @@
 <?php
 include "conexao.php";
 
-$destino = filter_input(INPUT_GET, 'destino', FILTER_SANITIZE_SPECIAL_CHARS);
+$batalhoes = [
+"193 Bombeiros","197 Policia Civil","33º BPM /66º BPM","25º BPM 11° CIA ind",
+"35º BPM/61º BPM","36º BPM/1ªCIA/8ª CIA","ATENDIMENTO REMOTO REDS",
+"1º BPM - A","40º BPM/6ªCIA IND","5º BPM","49º BPM - A",
+"1ª RPM - CPE","7 RPM B","PMMG/BPMRV/BPGD","52º BPM  1° CIA Ind",
+"SUP DESP - 2ª/3ª RPM","22º BPM - A","22º BPM - B","BTL METROPOLE",
+"41º BPM","CPE  / BPTRAN","34º BPM - A","16º BPM - A","16º BPM - B",
+"34º BPM - B","13º BPM","49º BPM - B","48º BPM/7 Cia",
+"39º BPM - A","18º BPM - A","7 RPM A"
+];
 
-$sql = "SELECT * FROM registros_chamadas";
-$params = [];
+$batalhaoSelecionado = filter_input(INPUT_GET,'batalhao');
 
-if (in_array($destino, ['190', '193', '197'])) {
-    $sql .= " WHERE destino_servico = ?";
+if($batalhaoSelecionado){
+    $sql = "SELECT * FROM registros_chamadas WHERE batalhao=?";
+}else{
+    $sql = "SELECT * FROM registros_chamadas WHERE batalhao IS NULL OR batalhao=''";
 }
-
 $sql .= " ORDER BY data_atendimento DESC";
 
 $stmt = $conexao->prepare($sql);
+if($batalhaoSelecionado){
+    $stmt->bind_param("s",$batalhaoSelecionado);
+}
+$stmt->execute();
+$result = $stmt->get_result();
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Painel de Chamadas</title>
 
-if (in_array($destino, ['190', '193', '197'])) {
-    $stmt->bind_param("s", $destino);
+<style>
+body{font-family:Arial;background:#f3f4f6;margin:0;padding:20px}
+
+.pastas{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:15px;
+    margin-bottom:25px;
 }
 
-$stmt->execute();
-$resultado = $stmt->get_result();
-?>
+.pasta{
+    background:#fff;
+    border:2px solid #ccc;
+    border-radius:12px;
+    padding:12px;
+    text-align:center;
+    font-weight:bold;
+    cursor:pointer;
+}
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Relatório de Chamadas</title>
+.pasta:hover{background:#eef3ff;border-color:#3b82f6}
 
-    <link rel="stylesheet" href="css/styles.css">
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:20px;
+}
 
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+.card{
+    background:white;
+    border:2px solid #ccc;
+    border-radius:12px;
+    padding:15px;
+    min-height:150px;
+    cursor:grab;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+.card:hover{
+    border-color:#3b82f6;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+.status-dot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    display:inline-block;
+    margin-right:8px;
+}
+.status-aberto{background:#dc2626}
+.status-encaminhada{background:#16a34a}
+.status-encerrada{background:#000}
+
+.btn-voltar{
+    display:inline-block;
+    margin-bottom:15px;
+    padding:10px 16px;
+    background:#1d4ed8;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+.btn-voltar:hover{
+    background:#2563eb;
+}
+</style>
 </head>
-
 <body>
-<div class="page">
 
-<header class="topbar">
-    <div class="topbar-inner">
-
-        <div class="logo-wrapper">
-            <a href="../index.html" class="logo-link">
-                <img src="img/sisp-logo.png" alt="Página inicial" class="logo-sisp-img">
-            </a>
-        </div>
-
-    </div>
-</header>
-
-<main class="main">
-<div class="main-inner">
-
-<div class="page-header">
-    <h1>Atendimentos Registrados</h1>
-    <p>Listagem completa de chamadas cadastradas no sistema</p>
-</div>
-<div class="filters-bar">
-    <div class="filters-pills">
-
-        <a href="relatorio.php"
-           class="pill <?= !$destino ? 'pill-active' : '' ?>">
-           Todos
-        </a>
-
-        <a href="relatorio.php?destino=190"
-           class="pill <?= $destino === '190' ? 'pill-active' : '' ?>">
-           190
-        </a>
-
-        <a href="relatorio.php?destino=193"
-           class="pill <?= $destino === '193' ? 'pill-active' : '' ?>">
-           193
-        </a>
-
-        <a href="relatorio.php?destino=197"
-           class="pill <?= $destino === '197' ? 'pill-active' : '' ?>">
-           197
-        </a>
-
-    </div>
-</div>
-<div class="cards-grid">
-
-<?php if ($resultado && $resultado->num_rows > 0): ?>
-<?php while ($linha = $resultado->fetch_assoc()): ?>
-
-<a href="relatorio_detalhe.php?id=<?= (int)$linha['id']; ?>" class="card">
-
-    <div class="card-icon">📞</div>
-
-    <div class="card-body">
-        <div class="card-header">
-            <h3><?= htmlspecialchars($linha['codigo_natureza']); ?></h3>
-            <span class="card-ext">#<?= (int)$linha['id']; ?></span>
-        </div>
-
-        <p>
-            <strong>Data:</strong>
-            <?= date("d/m/Y", strtotime($linha['data_atendimento'])); ?>
-            às <?= htmlspecialchars($linha['hora_atendimento']); ?>
-        </p>
-
-        <p>
-            <strong>Teleatendente:</strong>
-            <?= htmlspecialchars($linha['nome_teleatendente']); ?>
-        </p>
-
-        <p>
-            <strong>Município:</strong>
-            <?= htmlspecialchars($linha['municipio_chamada']); ?>
-        </p>
-
-        <p>
-            <strong>Solicitante:</strong>
-            <?= htmlspecialchars($linha['nome_solicitante']); ?>
-        </p>
-    </div>
-
-    '
-
+<h2><?= $batalhaoSelecionado ? "Batalhão: ".$batalhaoSelecionado : "📥 Caixa de Entrada (Sem Batalhão)" ?></h2>
+<a href="relatorio.php" class="btn-voltar">
+    📥 Chamadas não encaminhadas
 </a>
+<div class="pastas">
+<?php foreach($batalhoes as $b): ?>
+    <div class="pasta" data-batalhao="<?= htmlspecialchars($b) ?>">
+        📁 <?= htmlspecialchars($b) ?>
+    </div>
+<?php endforeach; ?>
+</div>
 
+<div class="grid">
+<?php while($c = $result->fetch_assoc()): ?>
+<div class="card"
+     draggable="true"
+     data-id="<?= $c['id'] ?>"
+     onclick="abrirChamado(<?= $c['id'] ?>, '<?= addslashes($c['batalhao']) ?>')">
+    <div style="display:flex;align-items:center;margin-bottom:8px;">
+        <span class="status-dot status-<?= $c['status'] ?>"></span>
+        <strong><?= htmlspecialchars($c['codigo_natureza']) ?></strong>
+    </div>
+
+    <?= htmlspecialchars($c['destino_servico']) ?><br>
+    ID: <?= $c['id'] ?><br>
+    <small><?= $c['data_atendimento'] ?></small><br>
+    <small>Batalhão: <?= $c['batalhao'] ?: "Não atribuído" ?></small>
+</div>
 <?php endwhile; ?>
-<?php else: ?>
-    <p>Nenhum registro encontrado.</p>
-<?php endif; ?>
-
-</div>
 </div>
 
+<<script>
+document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('dragstart',e=>{
+        e.stopPropagation(); // evita disparar o onclick
+        e.dataTransfer.setData('id',card.dataset.id);
+    });
+});
+
+document.querySelectorAll('.pasta').forEach(pasta=>{
+    pasta.addEventListener('dragover',e=>e.preventDefault());
+
+    pasta.addEventListener('drop',e=>{
+        fetch('mover_chamada.php',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                id:e.dataTransfer.getData('id'),
+                batalhao:pasta.dataset.batalhao
+            })
+        }).then(()=>location.reload());
+    });
+
+    pasta.addEventListener('click',()=>{
+        location='relatorio.php?batalhao='+encodeURIComponent(pasta.dataset.batalhao);
+    });
+});
+
+function abrirChamado(id, batalhao){
+    if(!batalhao || batalhao.trim() === ""){
+        alert("⚠️ Atribua esta chamada a um batalhão antes de abrir.");
+        return;
+    }
+    window.location = "relatorio_detalhe.php?id=" + id;
+}
+</script>
 
 
-</main>
-
-<footer class="footer">
-    Sistema de Relatórios • <?= date("Y"); ?>
-</footer>
-
-</div>
 </body>
 </html>
+

@@ -1,7 +1,6 @@
 <?php
 require "conexao.php";
 
-// valor digitado na busca
 $busca = isset($_GET['q']) ? trim($_GET['q']) : "";
 ?>
 
@@ -10,7 +9,7 @@ $busca = isset($_GET['q']) ? trim($_GET['q']) : "";
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chamadas Finalizadas</title>
+<title>Chamadas Registradas</title>
 
 <link rel="stylesheet" href="chamadas.css">
 
@@ -19,11 +18,10 @@ $busca = isset($_GET['q']) ? trim($_GET['q']) : "";
   margin-top: 20px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
   overflow: hidden;
 }
 
-/* barra de busca */
 .search-box {
   margin: 16px 0 10px 0;
   display: flex;
@@ -52,7 +50,6 @@ $busca = isset($_GET['q']) ? trim($_GET['q']) : "";
   background:#254bdd;
 }
 
-/* tabela */
 table { width: 100%; border-collapse: collapse; }
 thead { background: #f3f4f6; }
 
@@ -76,7 +73,6 @@ tr.row-link:hover td {
   background:#eef2ff;
 }
 
-/* responsivo */
 @media(max-width: 760px){
   table, thead, tbody, th, td, tr { display:block; }
   thead{ display:none; }
@@ -103,157 +99,117 @@ tr.row-link:hover td {
 
 <div class="page">
 
-  <!-- TOPO -->
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="logo-wrapper">
-        <img src="logo.png" class="logo-sisp-img" alt="Logo">
-      </div>
+<h1>Chamadas Registradas</h1>
+<p>Lista geral das chamadas no sistema</p>
 
-      <div class="clock-wrapper">
-        <div class="clock-time" id="clockTime"></div>
-        <div class="clock-date" id="clockDate"></div>
-      </div>
-    </div>
-  </div>
+<form class="search-box" method="GET">
+    <input 
+      type="text" 
+      name="q" 
+      placeholder="Buscar por ID, solicitante, telefone, município ou natureza"
+      value="<?= htmlspecialchars($busca) ?>"
+    >
+    <button type="submit">Buscar</button>
+</form>
 
-  <!-- CONTEÚDO -->
-  <main class="main">
-    <div class="main-inner">
+<div class="table-wrapper">
 
-      <div class="page-header">
-        <h1>Chamadas Finalizadas</h1>
-        <p>Relatório geral das chamadas registradas</p>
-      </div>
+<?php
 
-      <!-- 🔎 BUSCA -->
-      <form class="search-box" method="GET">
-        <input 
-          type="text" 
-          name="q" 
-          placeholder="Buscar por ID, solicitante, telefone, município ou natureza..."
-          value="<?= htmlspecialchars($busca) ?>"
-        >
-        <button type="submit">Buscar</button>
-      </form>
+$sql = "
+SELECT 
+    id,
+    data_atendimento,
+    hora_atendimento,
+    nome_solicitante,
+    telefone_chamada,
+    municipio_chamada,
+    codigo_natureza
+FROM registros_chamadas
+";
 
-      <div class="table-wrapper">
+if ($busca !== "") {
+    $sql .= "
+      WHERE 
+        id = ? OR
+        nome_solicitante LIKE ? OR
+        telefone_chamada LIKE ? OR
+        municipio_chamada LIKE ? OR
+        codigo_natureza LIKE ?
+    ";
+}
 
-        <?php
+$sql .= " ORDER BY id DESC LIMIT 200";
 
-        // consulta base
-        $sql = "
-          SELECT 
-            chamada_id,
-            data_atendimento,
-            hora_atendimento,
-            solicitante,
-            telefone,
-            municipio,
-            descricao_natureza_final,
-            finalizado_em
-          FROM chamadas_finalizadas
-        ";
+$stmt = $conexao->prepare($sql);
 
-        // adiciona filtros se houver busca
-        if ($busca !== "") {
-            $sql .= "
-              WHERE 
-                chamada_id = ? OR
-                solicitante LIKE ? OR
-                telefone LIKE ? OR
-                municipio LIKE ? OR
-                descricao_natureza_final LIKE ?
-            ";
-        }
+if ($busca !== "") {
+    $idBusca = is_numeric($busca) ? (int)$busca : 0;
+    $like = "%$busca%";
 
-        $sql .= " ORDER BY finalizado_em DESC LIMIT 200";
+    $stmt->bind_param("issss", $idBusca, $like, $like, $like, $like);
+}
 
-        $stmt = $conexao->prepare($sql);
+$stmt->execute();
+$resultado = $stmt->get_result();
+?>
 
-        if ($busca !== "") {
-            $idBusca = is_numeric($busca) ? (int)$busca : 0;
-            $like = "%$busca%";
+<table>
+<thead>
+<tr>
+  <th>#</th>
+  <th>Solicitante</th>
+  <th>Telefone</th>
+  <th>Município</th>
+  <th>Natureza</th>
+  <th>Atendimento</th>
+</tr>
+</thead>
 
-            $stmt->bind_param("sssss", $idBusca, $like, $like, $like, $like);
-        }
+<tbody>
 
-        $stmt->execute();
-        $resultado = $stmt->get_result();
-        ?>
+<?php if ($resultado && $resultado->num_rows > 0): ?>
+<?php while ($c = $resultado->fetch_assoc()): ?>
 
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Solicitante</th>
-              <th>Telefone</th>
-              <th>Município</th>
-              <th>Natureza final</th>
-              <th>Atendimento</th>
-              <th>Finalizado em</th>
-            </tr>
-          </thead>
+<tr class="row-link"
+    onclick="window.location='relatorio.php?id=<?= $c['id'] ?>'">
 
-          <tbody>
+  <td data-label="#"><?= $c['id'] ?></td>
 
-          <?php if ($resultado && $resultado->num_rows > 0): ?>
-            <?php while ($c = $resultado->fetch_assoc()): ?>
+  <td data-label="Solicitante">
+    <?= htmlspecialchars($c['nome_solicitante']) ?>
+  </td>
 
-              <tr
-                class="row-link"
-                onclick="window.location='relatorio.php?id=<?= $c['chamada_id'] ?>'"
-              >
+  <td data-label="Telefone">
+    <?= htmlspecialchars($c['telefone_chamada']) ?>
+  </td>
 
-                <td data-label="#"><?= htmlspecialchars($c['chamada_id']) ?></td>
+  <td data-label="Município">
+    <?= htmlspecialchars($c['municipio_chamada']) ?>
+  </td>
 
-                <td data-label="Solicitante">
-                  <?= htmlspecialchars($c['solicitante']) ?>
-                </td>
+  <td data-label="Natureza">
+    <?= htmlspecialchars($c['codigo_natureza']) ?>
+  </td>
 
-                <td data-label="Telefone">
-                  <?= htmlspecialchars($c['telefone']) ?>
-                </td>
+  <td data-label="Atendimento">
+    <?= date("d/m/Y", strtotime($c['data_atendimento'])) ?>
+    às <?= substr($c['hora_atendimento'],0,5) ?>
+  </td>
 
-                <td data-label="Município">
-                  <?= htmlspecialchars($c['municipio']) ?>
-                </td>
+</tr>
 
-                <td data-label="Natureza final">
-                  <?= nl2br(htmlspecialchars($c['descricao_natureza_final'])) ?>
-                </td>
+<?php endwhile; ?>
+<?php else: ?>
+<tr>
+  <td colspan="6">Nenhum registro encontrado.</td>
+</tr>
+<?php endif; ?>
 
-                <td data-label="Atendimento">
-                  <?= date("d/m/Y", strtotime($c['data_atendimento'])) ?>
-                  às
-                  <?= substr($c['hora_atendimento'], 0, 5) ?>
-                </td>
+</tbody>
+</table>
 
-                <td data-label="Finalizado em">
-                  <?= date("d/m/Y H:i", strtotime($c['finalizado_em'])) ?>
-                </td>
-
-              </tr>
-
-            <?php endwhile; ?>
-          <?php else: ?>
-            <tr>
-              <td colspan="7">Nenhum resultado encontrado.</td>
-            </tr>
-          <?php endif; ?>
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    </div>
-  </main>
-
-  <footer class="footer">
-    Sistema de Chamadas — CIAD
-  </footer>
+</div>
 
 </div>
 

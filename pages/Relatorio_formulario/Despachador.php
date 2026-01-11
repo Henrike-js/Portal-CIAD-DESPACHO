@@ -62,7 +62,6 @@ input[readonly],textarea[readonly]{background:#F4F5F8}
 .w-50{flex:50%}
 .w-100{flex:100%}
 
-/* Classificação em 3 colunas */
 .classificacao-grid{
     display:grid;
     grid-template-columns:repeat(3,1fr);
@@ -130,7 +129,6 @@ Chamada Nº <?= (int)$dados_chamada['id']; ?> •
 </div>
 </div>
 
-<!-- ================= FORMULÁRIO DO DESPACHADOR ================= -->
 <form action="salvar_despachador.php" method="post">
 
 <input type="hidden" name="chamada_id" value="<?= (int)$dados_chamada['id']; ?>">
@@ -140,13 +138,21 @@ Chamada Nº <?= (int)$dados_chamada['id']; ?> •
 <h3>Dados do Despachador</h3>
 
 <div class="row">
-    <div class="w-33"><label>Matrícula</label><input name="matricula" required></div>
-    <div class="w-50"><label>Nome</label><input name="nome" required></div>
+    <div class="w-33"><label>Matrícula</label>
+        <input name="matricula" required value="<?= htmlspecialchars($dados_chamada['despachador_matricula'] ?? '') ?>">
+    </div>
+    <div class="w-50"><label>Nome</label>
+        <input name="nome" required value="<?= htmlspecialchars($dados_chamada['despachador_nome'] ?? '') ?>">
+    </div>
 </div>
 
 <div class="row">
-    <div class="w-25"><label>Data</label><input type="date" name="data" required></div>
-    <div class="w-25"><label>Hora</label><input type="time" name="hora" required></div>
+    <div class="w-25"><label>Data</label>
+        <input type="date" name="data" required value="<?= $dados_chamada['data_despacho'] ?>">
+    </div>
+    <div class="w-25"><label>Hora</label>
+        <input type="time" name="hora" required value="<?= $dados_chamada['hora_despacho'] ?>">
+    </div>
 </div>
 </div>
 
@@ -155,14 +161,24 @@ Chamada Nº <?= (int)$dados_chamada['id']; ?> •
 <h3>Status do Recurso</h3>
 
 <div class="row">
-    <div class="w-33"><label>Recurso</label><input name="recurso"></div>
-    <div class="w-33"><label>Unidade</label><input name="unidade"></div>
+    <div class="w-33"><label>Recurso</label>
+        <input name="recurso" value="<?= htmlspecialchars($dados_chamada['recurso']) ?>">
+    </div>
+    <div class="w-33"><label>Unidade</label>
+        <input name="unidade" value="<?= htmlspecialchars($dados_chamada['unidade']) ?>">
+    </div>
 </div>
 
 <div class="row">
-    <div class="w-25"><label>Despachada</label><input type="time" name="hora_despachada"></div>
-    <div class="w-25"><label>A caminho</label><input type="time" name="hora_a_caminho"></div>
-    <div class="w-25"><label>No local</label><input type="time" name="hora_no_local"></div>
+    <div class="w-25"><label>Despachada</label>
+        <input type="time" name="hora_despachada" value="<?= $dados_chamada['hora_despachada'] ?>">
+    </div>
+    <div class="w-25"><label>A caminho</label>
+        <input type="time" name="hora_a_caminho" value="<?= $dados_chamada['hora_a_caminho'] ?>">
+    </div>
+    <div class="w-25"><label>No local</label>
+        <input type="time" name="hora_no_local" value="<?= $dados_chamada['hora_no_local'] ?>">
+    </div>
 </div>
 
 <div class="row">
@@ -170,40 +186,42 @@ Chamada Nº <?= (int)$dados_chamada['id']; ?> •
         <label>Encerramento</label>
         <select name="encerramento">
             <option value="">Selecione</option>
-            <option>Terminado</option>
-            <option>Suspenso</option>
-            <option>Disponível</option>
-            <option>Indisponível</option>
+            <?php
+            foreach(['Terminado','Suspenso','Disponível','Indisponível'] as $op){
+                $sel = ($op == $dados_chamada['encerramento']) ? "selected" : "";
+                echo "<option $sel>$op</option>";
+            }
+            ?>
         </select>
     </div>
 </div>
 </div>
 
-<!-- ================= CLASSIFICAÇÃO DA CHAMADA ================= -->
+<!-- ================= CLASSIFICAÇÃO ================= -->
 <div class="card">
 <h3>Classificação da Chamada</h3>
 
 <div class="classificacao-grid">
-<label><input type="radio" name="classificacao" value="Transmitido a rede">Transmitido à rede</label>
-<label><input type="radio" name="classificacao" value="Trote W07.000">Trote – W07.000</label>
-<label><input type="radio" name="classificacao" value="Emissão de multa">Emissão de multa</label>
-<label><input type="radio" name="classificacao" value="Solicitante não encontrado W01.000">Solicitante não encontrado – W01.000</label>
-<label><input type="radio" name="classificacao" value="Relatório">Relatório</label>
-<label><input type="radio" name="classificacao" value="Cancelada pela coordenação">Cancelada pela coordenação</label>
-<label><input type="radio" name="classificacao" value="Boletim de ocorrência">Boletim de ocorrência</label>
-<label><input type="radio" name="classificacao" value="Nada constatado W04.000">Nada constatado – W04.000</label>
-<label><input type="radio" name="classificacao" value="Atendimento sem BO">Atendimento sem BO</label>
-<label><input type="radio" name="classificacao" value="Dispensado pelo solicitante">Dispensado pelo solicitante</label>
-<label><input type="radio" name="classificacao" value="Endereço não localizado W02.000">Endereço não localizado – W02.000</label>
-<label><input type="radio" name="classificacao" value="Cancelada indisp meios W08.000">Cancelada – Indisp. meios – W08.000</label>
-<label><input type="radio" name="classificacao" value="Duplicata">Duplicata</label>
-<label><input type="radio" name="classificacao" value="Outros">Outros</label>
+<?php
+$opcoes = [
+"Transmitido a rede","Trote W07.000","Emissão de multa",
+"Solicitante não encontrado W01.000","Relatório",
+"Cancelada pela coordenação","Boletim de ocorrência",
+"Nada constatado W04.000","Atendimento sem BO",
+"Dispensado pelo solicitante","Endereço não localizado W02.000",
+"Cancelada indisp meios W08.000","Duplicata","Outros"
+];
+foreach($opcoes as $op){
+    $sel = ($op == $dados_chamada['classificacao']) ? "checked" : "";
+    echo "<label><input type='radio' name='classificacao' value='$op' $sel> $op</label>";
+}
+?>
 </div>
 
 <div class="row" style="margin-top:15px">
     <div class="w-50">
         <label>Observação / Nº da chamada</label>
-        <input name="observacao_classificacao">
+        <input name="observacao_classificacao" value="<?= htmlspecialchars($dados_chamada['observacao_classificacao']) ?>">
     </div>
 </div>
 </div>
@@ -215,37 +233,35 @@ Chamada Nº <?= (int)$dados_chamada['id']; ?> •
 <div class="row">
     <div class="w-100">
         <label>Descrição da Natureza Final</label>
-        <textarea name="descricao_natureza_final" rows="4"></textarea>
+        <textarea name="descricao_natureza_final"><?= htmlspecialchars($dados_chamada['descricao_natureza_final']) ?></textarea>
     </div>
 </div>
 
 <div class="row">
-    <div class="w-33"><label>Código Natureza Final</label><input name="codigo_natureza_final"></div>
-    <div class="w-33"><label>Número da Chamada</label><input name="numero_chamada" value="<?= (int)$dados_chamada['id']; ?>" readonly></div>
-    <div class="w-33"><label>NR PM</label><input name="nr_pm"></div>
+    <div class="w-33"><label>Código Natureza Final</label>
+        <input name="codigo_natureza_final" value="<?= htmlspecialchars($dados_chamada['codigo_natureza_final']) ?>">
+    </div>
+    <div class="w-33"><label>Número da Chamada</label>
+        <input value="<?= $dados_chamada['id'] ?>" readonly>
+    </div>
+    <div class="w-33"><label>NR PM</label>
+        <input name="nr_pm" value="<?= htmlspecialchars($dados_chamada['nr_pm']) ?>">
+    </div>
 </div>
 
 <div class="row">
     <div class="w-100">
         <label>Comentários</label>
-        <textarea name="comentarios" rows="3"></textarea>
+        <textarea name="comentarios"><?= htmlspecialchars($dados_chamada['comentarios']) ?></textarea>
     </div>
 </div>
 </div>
-<div style="display:flex; gap:15px; margin-top:30px;">
 
-    <!-- BOTÃO SALVAR DESPACHO -->
 <button type="submit">Salvar Despacho</button>
 
 </form>
 
 </div>
-
-<script>
-const now = new Date();
-document.querySelector('input[name="data"]').value = now.toISOString().substring(0,10);
-document.querySelector('input[name="hora"]').value = now.toTimeString().substring(0,5);
-</script>
 
 </body>
 </html>

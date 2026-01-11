@@ -191,9 +191,8 @@ Nº <?= htmlspecialchars($d['numero_solicitante']); ?>
 
 <!-- ================= BOTÃO DESPACHAR ================= -->
 <div style="margin-top:30px; display:flex; justify-content:flex-start;">
-    <a href="../Despachador_formulario/Despachador.php?chamada=<?= (int)$d['id']; ?>"
-       class="btn-despachar">
-        Despachar
+    <a href="Despachador.php?chamada=<?= (int)$_GET['id']; ?>" class="btn-despachar">
+       🚓 Despachar ocorrência
     </a>
 </div>
 
